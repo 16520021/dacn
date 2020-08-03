@@ -1,0 +1,172 @@
+version: "3"
+
+services:
+  # base:
+  #   build: ./base/
+  #   image: ubuntu18.04_java8
+
+  # spark_base:
+  #   build: ./spark_base/
+  #   image: spark_base
+
+  spark-master:
+    build: ./spark_master/
+    container_name: spark-master
+    restart: always
+    ports:
+      - 8080:8080
+      - 7077:7077
+      - 8888:8888
+      - 8085:8085
+    volumes:
+      - ./data/jupyter-data:/jupyter-data
+    env_file:
+      - ./hadoop.env
+
+  spark-worker:
+    build: ./spark_worker/
+    container_name: spark-worker
+    depends_on:
+      - spark-master
+    restart: always
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+    ports:
+      - 8081:8081
+    env_file:
+      - ./hadoop.env
+
+  namenode:
+    build: ./namenode/
+    container_name: namenode
+    restart: always
+    ports:
+      - 9870:9870
+      - 9000:9000
+    volumes:
+      - ./data/namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop.env
+
+  datanode:
+    build: ./datanode/
+    container_name: datanode
+    restart: always
+    volumes:
+      - ./data/datanode:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file:
+      - ./hadoop.env
+
+  datanode1:
+    build: ./datanode/
+    container_name: datanode1
+    restart: always
+    volumes:
+      - ./data/datanode1:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file:
+      - ./hadoop.env
+  
+  resourcemanager:
+    build: ./resourcemanager/
+    container_name: resourcemanager
+    restart: always
+    ports: 
+      - 8089:8088
+    depends_on:
+      - namenode
+      - datanode
+      - datanode1
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870"
+    env_file:
+      - ./hadoop.env
+
+  nodemanager:
+    build: ./nodemanager
+    container_name: nodemanager
+    restart: always
+    depends_on:
+    - namenode
+    - datanode
+    - datanode1
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+  
+  historyserver:
+    build: ./historyserver/
+    container_name: historyserver
+    restart: always
+    depends_on:
+    - namenode
+    - datanode
+    - datanode1
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    volumes:
+      - hadoop_historyserver:/hadoop/yarn/timeline
+    env_file:
+      - ./hadoop.env
+
+  zoo:
+    image: zookeeper:3.4.10
+    container_name: zoo
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888
+    ports:
+      - 2181:2181
+
+  hbase-master:
+    build: ./hmaster/
+    container_name: hbase-master
+    hostname: hbase-master
+    env_file:
+      - ./hbase-distributed-local.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870 zoo:2181"
+    ports:
+      - 16010:16010
+      - 9090:9090
+
+  hbase-region:
+    build: ./hregionserver/
+    container_name: hbase-regionserver
+    hostname: hbase-regionserver
+    env_file:
+      - ./hbase-distributed-local.env
+    environment:
+      HBASE_CONF_hbase_regionserver_hostname: hbase-region
+      SERVICE_PRECONDITION: "namenode:9870 zoo:2181 hbase-master:16010"
+    ports:
+      - 16030:16030
+
+  cassandra:
+    container_name: cassandra
+    image: cassandra:latest
+    # volumes:
+    #   - ./data/cassandra:/var/lib/cassandra/data
+    ports:
+      - 127.0.0.1:9042:9042
+      - 7000:7000
+      - 7001:7001
+      - 7199:7199
+      - 9160:9160
+    environment:
+      - CASSANDRA_START_RPC=true
+      - CASSANDRA_CLUSTER_NAME=MyCluster
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_DC=datacenter
+  
+volumes:
+  hadoop_namenode:
+  hadoop_datanode:
+  hadoop_datanode1:
+  hadoop_historyserver:
