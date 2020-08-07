@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && pip install cassandra-driver \
     && pip install --upgrade tensorflow \
     && pip install jupyter \
+    && pip install apache-airflow \
     && jupyter notebook --generate-config
 
 ENV SPARK_MASTER_PORT 7077
@@ -31,6 +32,7 @@ ENV SPARK_HOME /spark
 ENV PYTHONPATH=/usr/bin/python3.6
 ENV PYSPARK_PYTHON=python3.6
 ENV AIRFLOW_PORT 8085
+ENV AIRFLOW_HOME ~/airflow
 
 EXPOSE 8080 7077 6066 8888 8085
 

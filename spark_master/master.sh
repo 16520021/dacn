@@ -15,9 +15,10 @@ echo "c.NotebookApp.notebook_dir = '/jupyter-data'" >> ~/.jupyter/jupyter_notebo
 
 jupyter notebook --ip=0.0.0.0 --allow-root
 
-# airflow initdb
+airflow initdb
 
-# airflow webserver -p $AIRFLOW_PORT
+airflow webserver -D -p $AIRFLOW_PORT
+airfow scheduler
 
 mkdir -p $SPARK_MASTER_LOG && touch $SPARK_MASTER_LOG/spark-master.out
 
