@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-pip \
         gcc \
         python3-dev \
+    && apt-get install -y cmake \
+    && apt install -y g++ \
     && pip3 install --upgrade pip \
     && pip install --upgrade wheel \
     && pip install -vU setuptools \
@@ -18,11 +20,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && pip install matplotlib \
     && pip install scikit-learn \
     && pip install cython \
-    && pip install happybase \
     && pip install cassandra-driver \
     && pip install --upgrade tensorflow \
     && pip install jupyter \
     && pip install apache-airflow \
+    && pip install opencv-python \
+    && pip install azure-mgmt-resource \
+    && pip install azure-mgmt-datalake-store \
+    && pip install azure-datalake-store \
+    && pip install mlxtend \
+    && pip install dlib \
+    && pip install imageio \
+    && pip install scikit-image \
     && jupyter notebook --generate-config
 
 ENV SPARK_MASTER_PORT 7077
@@ -36,4 +45,4 @@ ENV AIRFLOW_HOME ~/airflow
 
 EXPOSE 8080 7077 6066 8888 8085
 
-CMD ["/bin/bash", "/master.sh"]
+CMD ["/bin/bash","/master.sh"]

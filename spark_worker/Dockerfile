@@ -4,7 +4,7 @@ MAINTAINER Hoang An <16520021@gm.uit.edu.vn>
 COPY worker.sh /
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        rsync
+        netcat
 
 ENV SPARK_WORKER_WEBUI_PORT 8081
 ENV SPARK_WORKER_LOG /spark/logs
