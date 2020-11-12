@@ -43,4 +43,6 @@ done
 
 mkdir -p $SPARK_WORKER_LOG && touch $SPARK_WORKER_LOG/spark-worker.out
 
+mkdir jupyter-data
+
 tail -f /dev/null

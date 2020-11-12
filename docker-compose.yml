@@ -38,6 +38,8 @@ services:
       - 8081:8081
     env_file:
       - ./hadoop.env
+    volumes:
+      - ./data/jupyter-data:/jupyter-data
 
   namenode:
     build: ./namenode/
@@ -154,8 +156,8 @@ services:
   cassandra:
     container_name: cassandra
     image: cassandra:latest
-    # volumes:
-    #   - ./data/cassandra:/var/lib/cassandra/data
+    volumes:
+      - ./data/cassandra:/var/lib/cassandra/data
     ports:
       - 9042:9042
       - 7000:7000
